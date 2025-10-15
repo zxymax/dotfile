@@ -1,31 +1,5 @@
 -- 通用插件配置
 return {
-  -- nvim-treesitter配置（如果能加载的话）
-  {"nvim-treesitter/nvim-treesitter",
-    version = false, -- 不固定版本，使用最新
-    build = ":TSUpdate",
-    event = {"BufReadPost", "BufNewFile"},
-    dependencies = {
-      "nvim-treesitter/nvim-treesitter-textobjects",
-    },
-    config = function()
-      -- 尝试加载nvim-treesitter
-      local ok, treesitter = pcall(require, "nvim-treesitter.configs")
-      if ok then
-        treesitter.setup({
-          ensure_installed = {"c", "cpp", "lua", "vim", "vimdoc", "query", "rust", "typescript", "javascript", "tsx", "jsx", "html", "css", "json", "jsonc"},
-          highlight = {
-            enable = true,
-          },
-          indent = {
-            enable = true,
-          },
-        })
-      else
-        vim.notify("无法加载nvim-treesitter", vim.log.levels.ERROR)
-      end
-    end,
-  },
   -- 主题配置
   {
     "LazyVim/LazyVim",
@@ -34,26 +8,105 @@ return {
     },
   },
 
-  -- 文件浏览器
+  -- 文件浏览器 - 图标支持
   {
+    "nvim-tree/nvim-web-devicons",
+    config = function()
+      local ok, web_devicons = pcall(require, "nvim-web-devicons")
+      if ok then
+        -- 启用真正的图标支持，使用已安装的Hack Nerd Font
+        web_devicons.setup({
+          strict = true,
+          override_by_extension = {}
+        })
+        vim.notify("nvim-web-devicons已加载，使用Hack Nerd Font图标", vim.log.levels.INFO)
+      else
+        vim.notify("无法加载nvim-web-devicons", vim.log.levels.WARN)
+      end
+    end,
+  },
+  {    
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    keys = {
-      { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "文件浏览器" },
-    },
+    event = "VeryLazy", -- 添加事件触发，确保在启动时加载
     config = function()
-      require("nvim-tree").setup({
-        view = {
-          width = 30,
-        },
-        filters = {
-          dotfiles = false,
-        },
-        git = {
-          enable = true,
-          ignore = false,
-        },
-      })
+      -- 添加错误处理
+      local ok, nvim_tree = pcall(require, "nvim-tree")
+      if not ok then
+        vim.notify("无法加载nvim-tree.lua: " .. tostring(nvim_tree), vim.log.levels.ERROR)
+        return
+      end
+      
+      -- 确保全局命令存在
+      _G.NvimTreeToggle = function()
+        local api = require("nvim-tree.api")
+        api.tree.toggle()
+      end
+      
+      -- 配置选项 - 使用真正的图标
+      local config = {
+          view = {
+            width = 30,
+          },
+          filters = {
+            dotfiles = false,
+          },
+          git = {
+            enable = true,
+            ignore = false,
+          },
+          -- 使用nvim-web-devicons的图标
+          renderer = {
+            icons = {
+              -- 启用所有图标显示
+              show = {
+                file = true,
+                folder = true,
+                folder_arrow = true,
+                git = true,
+              },
+              -- 使用默认图标配置
+              glyphs = {
+                folder = {
+                  arrow_closed = "▶",
+                  arrow_open = "▼",
+                },
+              },
+              -- 启用webdev颜色
+              webdev_colors = true,
+            },
+            -- 特殊文件标记
+            special_files = {
+              "Cargo.toml", "Makefile", "README.md", "readme.md"
+            }
+          },
+          -- 添加自定义快捷键映射
+          on_attach = function(bufnr)
+          local api = require("nvim-tree.api")
+          
+          -- 定义默认映射
+          local function opts(desc)
+            return {
+              desc = "nvim-tree: " .. desc,
+              buffer = bufnr,
+              noremap = true,
+              silent = true,
+              nowait = true,
+            }
+          end
+          
+          -- 基本导航映射
+          vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))
+          vim.keymap.set('n', 'o', api.node.open.edit, opts('Open'))
+          vim.keymap.set('n', 'h', api.node.navigate.parent_close, opts('Close Directory'))
+          vim.keymap.set('n', 'l', api.node.open.edit, opts('Open'))
+          vim.keymap.set('n', 'q', api.tree.close, opts('Close'))
+        end
+      }
+      
+      nvim_tree.setup(config)
+      
+      vim.notify("nvim-tree.lua加载成功，使用Hack Nerd Font图标", vim.log.levels.INFO)
     end,
   },
 
@@ -177,8 +230,7 @@ return {
           },
         })
         
-        -- 加载扩展
-        pcall(require, "telescope")
+        -- 扩展已通过配置自动加载
       else
         vim.notify("无法加载telescope", vim.log.levels.ERROR)
       end

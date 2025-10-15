@@ -29,6 +29,23 @@ vim.opt.scrolloff = 8          -- 滚动时保持光标周围有8行
 vim.opt.sidescrolloff = 8      -- 水平滚动时保持光标周围有8列
 vim.opt.showmode = false       -- 不显示模式
 
+-- 字体设置 - 使用Hack Nerd Font
+vim.cmd [[
+  if has('gui_running')
+    if has('win32')
+      set guifont=Hack\ Nerd\ Font:h12  " Windows环境
+    else
+      set guifont=Hack\ Nerd\ Font\ 12  " Linux/macOS环境
+    endif
+  endif
+]]
+
+-- 确保正确的字符编码设置
+vim.opt.fileencodings = { 'utf-8', 'gbk', 'gb2312', 'cp936' }
+
+-- 更安全的设置，确保在保存文件时不会损坏中文字符
+vim.opt.fileformats = { 'unix', 'dos', 'mac' }
+
 -- 文件设置
 vim.opt.swapfile = false       -- 不创建交换文件
 vim.opt.backup = false         -- 不创建备份文件

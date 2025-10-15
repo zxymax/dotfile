@@ -21,7 +21,21 @@ function M.setup_general()
   map("n", "<leader>Q", "<cmd>q!<cr>", { desc = "强制退出" })
   map("n", "<leader>x", "<cmd>x<cr>", { desc = "保存并退出" })
   map("n", "<leader>nh", "<cmd>nohl<cr>", { desc = "清除搜索高亮" })
-  map("n", "<leader>e", "<cmd>NvimTreeToggle<cr>", { desc = "文件浏览器" })
+  map("n", "<leader>e", function()
+    local ok, api = pcall(require, "nvim-tree.api")
+    if ok then
+      api.tree.toggle()
+    else
+      vim.notify("nvim-tree未加载，无法打开文件浏览器", vim.log.levels.ERROR)
+      -- 作为后备方案，尝试全局函数
+      if _G.NvimTreeToggle then
+        _G.NvimTreeToggle()
+      end
+    end
+  end, { desc = "文件浏览器" })
+  map("n", "L", "$", { desc = "移动到行尾"})
+  map("n", "H", "^", { desc = "移动到行头"})
+  map("i", "jk", "<ESC>", { desc = "退出插入模式"})
 
   -- 窗口管理
   map("n", "<leader>sv", "<C-w>v", { desc = "垂直分割窗口" })
