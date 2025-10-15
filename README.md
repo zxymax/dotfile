@@ -6,6 +6,28 @@
 
 - **现代化界面**：使用 TokyoNight 主题，搭配 Nerd Font 图标
 - **漂亮的状态栏**：增强的 lualine.nvim 配置，借鉴 craftzdog 风格，显示更多信息和更好的视觉效果
+- **终端集成**：使用 Windows Terminal 模拟 tmux 功能，提供标签页管理和窗格分割
+
+## Windows Terminal 替代 tmux 功能
+
+由于在Windows上安装tmux需要管理员权限（通过WSL），我们使用Windows Terminal来模拟tmux的核心功能：
+
+### 核心功能对比
+
+| 功能 | tmux | Windows Terminal |
+|------|------|-----------------|
+| 新建会话 | `tmux new` | `Ctrl + Shift + T` (标签页) |
+| 分割窗格 | `Ctrl+b %` (垂直), `Ctrl+b "` (水平) | `Alt + Shift + +` (垂直), `Alt + Shift + -` (水平) |
+| 切换窗格 | `Ctrl+b 方向键` | `Alt + 方向键` |
+| 关闭窗格 | `Ctrl+b x` | `Ctrl + Shift + W` |
+
+### Neovim 终端快捷键
+
+- **打开终端**: `Ctrl+\`
+- **在终端中返回普通模式**: `Esc` 或 `jk`
+- **在终端中导航窗口**: `Ctrl+h/j/k/l`
+
+详细配置请查看项目中的 `WINDOWS_TERMINAL_CONFIG.md` 文件。
 - **欢迎界面**：集成 dashboard-nvim，提供项目和最近文件快速访问
 - **平滑滚动**：使用 neoscroll.nvim 提供流畅的页面滚动体验
 - **增强的终端**：改进的 toggleterm.nvim 配置，支持更好的窗口导航和视觉效果

@@ -110,7 +110,7 @@ return {
     end,
   },
 
-  -- 状态栏
+  -- 状态栏 - 借鉴craftzdog风格
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -118,16 +118,100 @@ return {
       require("lualine").setup({
         options = {
           theme = "tokyonight",
-          component_separators = { left = '|', right = '|' },
-          section_separators = { left = '', right = '' },
+          component_separators = { left = '', right = '' },
+          section_separators = { left = '', right = '' },
+          globalstatus = true,
+          disabled_filetypes = { statusline = { "dashboard", "alpha" } },
         },
         sections = {
-          lualine_b = { "branch", "diff" },
+          lualine_a = { "mode" },
+          lualine_b = { "branch", { "diff", colored = true } },
+          lualine_c = { 
+            { 
+              "filename", 
+              path = 1, -- 显示相对路径
+              symbols = { 
+                modified = "●",
+                readonly = "",
+                unnamed = "",
+              }
+            }
+          },
+          lualine_x = { 
+            { 
+              "diagnostics",
+              sources = { "nvim_lsp" },
+              symbols = { error = "●", warn = "●", info = "●", hint = "●" },
+            },
+            "encoding", 
+            "fileformat", 
+            "filetype",
+          },
+          lualine_y = { "progress" },
+          lualine_z = { "location" },
+        },
+        inactive_sections = {
+          lualine_a = {},
+          lualine_b = {},
           lualine_c = { "filename" },
-          lualine_x = { "encoding", "fileformat", "filetype" },
+          lualine_x = { "location" },
+          lualine_y = {},
+          lualine_z = {},
+        },
+        extensions = { "nvim-tree", "toggleterm" },
+      })
+    end,
+  },
+  
+  -- 欢迎界面 - 借鉴craftzdog风格
+  {
+    "nvimdev/dashboard-nvim",
+    event = "VimEnter",
+    config = function()
+      require("dashboard").setup({
+        theme = "hyper",
+        config = {
+          header = {
+            "",
+            "",
+            "",
+            "███╗   ██╗ ███████╗ ██████╗  ██╗   ██╗ ██╗ ███╗   ███╗",
+            "████╗  ██║ ██╔════╝██╔═══██╗ ██║   ██║ ██║ ████╗ ████║",
+            "██╔██╗ ██║ █████╗  ██║   ██║ ██║   ██║ ██║ ██╔████╔██║",
+            "██║╚██╗██║ ██╔══╝  ██║   ██║ ╚██╗ ██╔╝ ██║ ██║╚██╔╝██║",
+            "██║ ╚████║ ███████╗╚██████╔╝  ╚████╔╝  ██║ ██║ ╚═╝ ██║",
+            "╚═╝  ╚═══╝ ╚══════╝ ╚═════╝    ╚═══╝   ╚═╝ ╚═╝     ╚═╝",
+            "",
+            "                   欢迎使用 Neovim                    ",
+            "",
+          },
+          week_header = {
+            enable = true,
+          },
+          shortcut = {
+            { desc = "󰊳  更新", group = "Label", action = "Lazy update", key = "u" },
+            { desc = "  文件", group = "Label", action = "Telescope find_files", key = "f" },
+            { desc = "󰙅  退出", group = "Label", action = "quit", key = "q" },
+          },
+          packages = {
+            enable = true,
+          },
+          project = {
+            enable = true,
+            limit = 8,
+            icon = "",
+            label = "最近项目:",
+            action = function(path) vim.cmd.cd(path) end,
+          },
+          mru = {
+            limit = 10,
+            icon = "",
+            label = "最近文件:",
+          },
         },
       })
     end,
+    dependencies = { { "nvim-tree/nvim-web-devicons" } },
   },
 
   -- 自动补全增强
@@ -245,24 +329,24 @@ return {
     dependencies = {"nvim-lua/plenary.nvim"}, -- 只保留必要的依赖
   },
   
-  -- 终端集成
+  -- 终端集成 - 改进的终端配置
   {
     "akinsho/toggleterm.nvim",
-    version = "v2.*",
+    version = "*",
     config = function()
       require("toggleterm").setup({
         size = 20,
-        open_mapping = [[<leader>\]],
+        open_mapping = [[<c-\>]],
         hide_numbers = true,
-        shade_filetypes = {},
         shade_terminals = true,
-        shading_factor = 2,
+        shading_factor = 1,
         start_in_insert = true,
         insert_mappings = true,
         persist_size = true,
-        direction = "float",
+        direction = "horizontal",
         close_on_exit = true,
         shell = vim.o.shell,
+        auto_scroll = true,
         float_opts = {
           border = "curved",
           winblend = 0,
@@ -272,6 +356,40 @@ return {
           },
         },
       })
+
+      function _G.set_terminal_keymaps()
+        local opts = {buffer = 0}
+        vim.keymap.set('t', '<esc>', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', 'jk', [[<C-\><C-n>]], opts)
+        vim.keymap.set('t', '<C-h>', [[<Cmd>wincmd h<CR>]], opts)
+        vim.keymap.set('t', '<C-j>', [[<Cmd>wincmd j<CR>]], opts)
+        vim.keymap.set('t', '<C-k>', [[<Cmd>wincmd k<CR>]], opts)
+        vim.keymap.set('t', '<C-l>', [[<Cmd>wincmd l<CR>]], opts)
+      end
+
+      vim.cmd('autocmd! TermOpen term://* lua set_terminal_keymaps()')
+    end
+  },
+  
+  -- 视觉增强 - 平滑滚动
+  {
+    "karb94/neoscroll.nvim",
+    config = function()
+      require("neoscroll").setup({
+        mappings = { "<C-u>", "<C-d>", "<C-b>", "<C-f>", "<C-y>", "<C-e>", "zt", "zz", "zb" },
+        hide_cursor = true,
+        stop_eof = true,
+        use_local_scrolloff = false,
+        respect_scrolloff = false,
+        cursor_scrolls_alone = true,
+        easing_function = nil,
+        pre_hook = nil,
+        post_hook = nil,
+        performance_mode = false,
+      })
     end,
   },
+  
+  -- 终端增强插件
+  { "skywind3000/vim-terminal-help", lazy = true },
 }
