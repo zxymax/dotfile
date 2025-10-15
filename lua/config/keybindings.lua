@@ -55,6 +55,7 @@ function M.setup_general()
   map("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "全局搜索" })
   map("n", "<leader>fb", "<cmd>Telescope buffers<cr>", { desc = "查找缓冲区" })
   map("n", "<leader>fh", "<cmd>Telescope help_tags<cr>", { desc = "查找帮助" })
+  map("n", "<leader>fr", "<cmd>Telescope oldfiles<cr>", { desc = "查找最近文件" })
   
   -- 添加一个telescope调试命令，用于查看所有可用的telescope命令
   map("n", "<leader>td", function()
@@ -89,9 +90,14 @@ function M.setup_general()
   map("n", "]d", "<cmd>lua vim.diagnostic.goto_next()<cr>", { desc = "下一个诊断" })
   map("n", "<leader>dl", "<cmd>lua vim.diagnostic.setloclist()<cr>", { desc = "设置诊断位置列表" })
 
-  -- 终端
-  map("n", [[<leader>\]], "<cmd>ToggleTerm<cr>", { desc = "切换终端" })
+  -- 终端 - 更新为Ctrl+\以匹配toggleterm配置
+  map("n", [[<c-\>]], "<cmd>ToggleTerm<cr>", { desc = "切换终端" })
   map("t", "<esc>", [[<C-\><C-n>]], { desc = "退出终端模式" })
+  map("t", "jk", [[<C-\><C-n>]], { desc = "退出终端模式(jk)" })
+  map("t", "<C-h>", [[<Cmd>wincmd h<CR>]], { desc = "终端模式下向左窗口移动" })
+  map("t", "<C-j>", [[<Cmd>wincmd j<CR>]], { desc = "终端模式下向下窗口移动" })
+  map("t", "<C-k>", [[<Cmd>wincmd k<CR>]], { desc = "终端模式下向上窗口移动" })
+  map("t", "<C-l>", [[<Cmd>wincmd l<CR>]], { desc = "终端模式下向右窗口移动" })
 
   -- 注释快捷键已在Comment.nvim插件配置中自动设置
   -- 如需自定义请参考plugins/init.lua文件
@@ -139,9 +145,48 @@ function M.setup_debug()
   -- <leader>b 切换断点
 end
 
+-- Dashboard 快捷键设置
+function M.setup_dashboard()
+  local map = vim.keymap.set
+  
+  -- Dashboard 欢迎界面快捷键
+  map("n", "<leader>u", "<cmd>Lazy update<cr>", { desc = "更新插件" })
+  map("n", "<leader>dd", "<cmd>Dashboard<cr>", { desc = "显示欢迎界面" })
+  map("n", "<leader>di", "<cmd>DashboardNewFile<cr>", { desc = "新建文件" })
+  map("n", "<leader>dr", "<cmd>DashboardFindRecent<cr>", { desc = "查找最近文件" })
+  map("n", "<leader>dp", "<cmd>DashboardFindProject<cr>", { desc = "查找项目" })
+  map("n", "<leader>dh", "<cmd>DashboardFindHistory<cr>", { desc = "查找历史" })
+end
+
+-- 增强的导航快捷键
+function M.setup_navigation()
+  local map = vim.keymap.set
+  
+  -- 快速移动
+  map("n", "<C-d>", "<C-d>zz", { desc = "向下滚动半屏并居中" })
+  map("n", "<C-u>", "<C-u>zz", { desc = "向上滚动半屏并居中" })
+  map("n", "n", "nzzzv", { desc = "搜索下一个并居中" })
+  map("n", "N", "Nzzzv", { desc = "搜索上一个并居中" })
+  
+  -- 窗口导航增强
+  map("n", "<C-h>", "<C-w>h", { desc = "向左窗口移动" })
+  map("n", "<C-j>", "<C-w>j", { desc = "向下窗口移动" })
+  map("n", "<C-k>", "<C-w>k", { desc = "向上窗口移动" })
+  map("n", "<C-l>", "<C-w>l", { desc = "向右窗口移动" })
+  
+  -- 标签页快速导航
+  map("n", "<leader>1", "1gt", { desc = "切换到标签页1" })
+  map("n", "<leader>2", "2gt", { desc = "切换到标签页2" })
+  map("n", "<leader>3", "3gt", { desc = "切换到标签页3" })
+  map("n", "<leader>4", "4gt", { desc = "切换到标签页4" })
+  map("n", "<leader>5", "5gt", { desc = "切换到标签页5" })
+end
+
 -- 初始化所有快捷键
 function M.setup()
   M.setup_general()
+  M.setup_dashboard()
+  M.setup_navigation()
   -- 语言特定快捷键会在各自的配置文件中设置
   -- 调试快捷键会在 DAP 配置中设置
 end
