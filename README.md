@@ -5,6 +5,8 @@
 ## 特性
 
 - **现代化界面**：使用 TokyoNight 主题，搭配 Nerd Font 图标
+- **漂亮的状态栏**：增强的 lualine.nvim 配置，借鉴 craftzdog 风格，显示更多信息和更好的视觉效果
+- **欢迎界面**：集成 dashboard-nvim，提供项目和最近文件快速访问
 - **智能代码编辑**：基于 nvim-treesitter 的语法高亮和代码解析
 - **文件浏览**：使用 nvim-tree.lua 提供直观的文件管理
 - **模糊查找**：集成 Telescope.nvim 实现快速文件和内容搜索
@@ -80,6 +82,8 @@ nvim
 - `<Leader>/`：注释当前行或选中代码
 - `Ctrl+\`：打开/关闭终端
 - `Alt+j/k/l/h`：在窗口间导航
+- `u`（在欢迎界面）：更新插件
+- `f`（在欢迎界面）：查找文件
 
 ### 文件浏览器 (nvim-tree)
 
