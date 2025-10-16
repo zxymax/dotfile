@@ -674,7 +674,7 @@ return {
       -- Use pcall to safely load the plugin and handle errors gracefully
       local ok, treesitter_configs = pcall(require, "nvim-treesitter.configs")
       if not ok then
-        vim.notify("nvim-treesitter plugin not found. Please run :Lazy install to install missing plugins.", vim.log.levels.WARN)
+        -- 静默跳过，不显示警告消息
         return
       end
       

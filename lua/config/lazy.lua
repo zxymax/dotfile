@@ -33,7 +33,7 @@ require("lazy").setup({
         -- 添加更强健的错误处理
         local ok, treesitter = pcall(require, "nvim-treesitter")
         if not ok then
-          vim.notify("无法加载nvim-treesitter: " .. tostring(treesitter), vim.log.levels.ERROR)
+          -- 静默失败，不显示错误消息
           return
         end
         
@@ -78,7 +78,7 @@ require("lazy").setup({
   install = { colorscheme = { "tokyonight", "habamax" } },
   checker = {
     enabled = true, -- 定期检查插件更新
-    notify = true, -- 通知更新
+    notify = false, -- 关闭更新通知
   },
   performance = {
     rtp = {
