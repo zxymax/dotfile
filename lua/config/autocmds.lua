@@ -84,13 +84,20 @@ vim.api.nvim_create_autocmd("BufEnter", {
   end,
 })
 
--- 自动格式化
+-- 自动格式化 - 使用更安全的检查方式
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = augroup,
   pattern = { "*.c", "*.cpp", "*.rs", "*.go", "*.js", "*.ts", "*.jsx", "*.tsx", "*.lua", "*.vim" },
   callback = function()
-    if vim.lsp.buf.server_ready() then
-      vim.lsp.buf.format({ async = false })
+    -- 使用pcall来安全地尝试格式化，避免因LSP不可用而导致错误
+    local success, err = pcall(function()
+      local clients = vim.lsp.get_active_clients({ buffer = 0 })
+      if #clients > 0 then
+        vim.lsp.buf.format({ async = false })
+      end
+    end)
+    if not success and err then
+      -- 静默失败，不影响保存
     end
   end,
 })

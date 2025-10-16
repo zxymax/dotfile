@@ -21,6 +21,40 @@ function M.setup_general()
   map("n", "<leader>Q", "<cmd>q!<cr>", { desc = "强制退出" })
   map("n", "<leader>x", "<cmd>x<cr>", { desc = "保存并退出" })
   map("n", "<leader>nh", "<cmd>nohl<cr>", { desc = "清除搜索高亮" })
+  
+  -- 增强的编辑器功能快捷键
+  map("n", "<leader>tn", function()
+    if _G.toggle_line_numbers then
+      _G.toggle_line_numbers()
+    else
+      vim.notify("toggle_line_numbers 函数未定义", vim.log.levels.WARN)
+    end
+  end, { desc = "切换行号显示模式" })
+  map("n", "<leader>tt", function()
+    if _G.toggle_transparency then
+      _G.toggle_transparency()
+    else
+      vim.notify("toggle_transparency 函数未定义", vim.log.levels.WARN)
+    end
+  end, { desc = "切换背景透明度" })
+  map("n", "<leader>ts", function()
+    if _G.toggle_spell_check then
+      _G.toggle_spell_check()
+    else
+      vim.notify("toggle_spell_check 函数未定义", vim.log.levels.WARN)
+    end
+  end, { desc = "切换拼写检查" })
+  map("n", "<leader>f", function()
+    if _G.format_buffer then
+      _G.format_buffer()
+    else
+      vim.notify("format_buffer 函数未定义", vim.log.levels.WARN)
+    end
+  end, { desc = "格式化当前文件" })
+  
+  -- 快速注释快捷键
+  map("n", "<leader>/", ":CommentToggle<CR>", { desc = "切换注释" })
+  map("v", "<leader>/", ":CommentToggle<CR>", { desc = "切换注释" })
   map("n", "<leader>e", function()
     local ok, api = pcall(require, "nvim-tree.api")
     if ok then

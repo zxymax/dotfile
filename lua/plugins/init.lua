@@ -110,11 +110,33 @@ return {
     end,
   },
 
-  -- 状态栏 - 借鉴craftzdog风格
+  -- 增强的状态栏配置
   {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = { 
+      "nvim-tree/nvim-web-devicons",
+      "folke/noice.nvim", -- 可选：与noice集成以获得更好的体验
+    },
     config = function()
+      local function get_lsp_progress()
+        local msg = ''
+        local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+        local clients = vim.lsp.get_active_clients()
+        if next(clients) == nil then
+          return msg
+        end
+        for _, client in ipairs(clients) do
+          local filetypes = client.config.filetypes
+          if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+            local status = client.status
+            if status and status ~= '' then
+              return status
+            end
+          end
+        end
+        return msg
+      end
+
       require("lualine").setup({
         options = {
           theme = "tokyonight",
@@ -122,10 +144,32 @@ return {
           section_separators = { left = '', right = '' },
           globalstatus = true,
           disabled_filetypes = { statusline = { "dashboard", "alpha" } },
+          ignore_focus = { "NvimTree" },
+          always_divide_middle = true,
+          refresh = {
+            statusline = 1000,
+            tabline = 1000,
+            winbar = 1000,
+          },
         },
         sections = {
-          lualine_a = { "mode" },
-          lualine_b = { "branch", { "diff", colored = true } },
+          lualine_a = { 
+            { 
+              "mode",
+              fmt = function(str)
+                return str:sub(1, 1) -- 只显示模式的第一个字符
+              end,
+              padding = { left = 1, right = 1 },
+            }
+          },
+          lualine_b = { 
+            { "branch", icon = "" }, 
+            { 
+              "diff", 
+              colored = true,
+              symbols = { added = "", modified = "", removed = "" },
+            }
+          },
           lualine_c = { 
             { 
               "filename", 
@@ -134,21 +178,42 @@ return {
                 modified = "●",
                 readonly = "",
                 unnamed = "",
-              }
-            }
+              },
+              padding = { left = 0 },
+            },
+            { get_lsp_progress, padding = { left = 1 } }
           },
           lualine_x = { 
             { 
               "diagnostics",
-              sources = { "nvim_lsp" },
-              symbols = { error = "●", warn = "●", info = "●", hint = "●" },
+              sources = { "nvim_lsp", "nvim_diagnostic" },
+              symbols = { error = "", warn = "", info = "", hint = "" },
+              colored = true,
+              update_in_insert = true,
             },
             "encoding", 
             "fileformat", 
-            "filetype",
+            { 
+              "filetype",
+              icon_only = true,
+              padding = { left = 1, right = 0 },
+            },
           },
-          lualine_y = { "progress" },
-          lualine_z = { "location" },
+          lualine_y = { 
+            { 
+              "progress",
+              fmt = function(str)
+                -- 只显示百分比，去掉前后括号
+                return str:gsub("[()]", "")
+              end,
+            }
+          },
+          lualine_z = { 
+            { 
+              "location",
+              padding = { left = 0, right = 1 },
+            }
+          },
         },
         inactive_sections = {
           lualine_a = {},
@@ -158,72 +223,158 @@ return {
           lualine_y = {},
           lualine_z = {},
         },
-        extensions = { "nvim-tree", "toggleterm" },
+        tabline = {},
+        winbar = {},
+        inactive_winbar = {},
+        extensions = { 
+          "nvim-tree", 
+          "toggleterm",
+          "lazy",
+          "man",
+          "quickfix",
+        },
       })
     end,
   },
   
-  -- 欢迎界面 - 借鉴craftzdog风格
+  -- 增强的欢迎界面配置
   {
     "nvimdev/dashboard-nvim",
     event = "VimEnter",
     config = function()
-      require("dashboard").setup({
-        theme = "hyper",
+      local dashboard = require("dashboard")
+      
+      -- 自定义标题图标
+      local function get_footer()
+        local datetime = os.date("%Y-%m-%d %H:%M:%S")
+        return { datetime, "󰚥  效率提升，从现在开始" }
+      end
+      
+      dashboard.setup({
+        theme = "doom",
         config = {
           header = {
             "",
             "",
+            "███╗   ██╗███████╗ ██████╗ ██╗   ██╗██╗███╗   ███╗",
+            "████╗  ██║██╔════╝██╔═══██╗██║   ██║██║████╗ ████║",
+            "██╔██╗ ██║█████╗  ██║   ██║██║   ██║██║██╔████╔██║",
+            "██║╚██╗██║██╔══╝  ██║   ██║╚██╗ ██╔╝██║██║╚██╔╝██║",
+            "██║ ╚████║███████╗╚██████╔╝ ╚████╔╝ ██║██║ ╚═╝ ██║",
+            "╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═══╝  ╚═╝╚═╝     ╚═╝",
             "",
-            "███╗   ██╗ ███████╗ ██████╗  ██╗   ██╗ ██╗ ███╗   ███╗",
-            "████╗  ██║ ██╔════╝██╔═══██╗ ██║   ██║ ██║ ████╗ ████║",
-            "██╔██╗ ██║ █████╗  ██║   ██║ ██║   ██║ ██║ ██╔████╔██║",
-            "██║╚██╗██║ ██╔══╝  ██║   ██║ ╚██╗ ██╔╝ ██║ ██║╚██╔╝██║",
-            "██║ ╚████║ ███████╗╚██████╔╝  ╚████╔╝  ██║ ██║ ╚═╝ ██║",
-            "╚═╝  ╚═══╝ ╚══════╝ ╚═════╝    ╚═══╝   ╚═╝ ╚═╝     ╚═╝",
-            "",
-            "                   欢迎使用 Neovim                    ",
+            "        ╭──────────────────────────────────╮        ",
+            "        │       智能开发环境，高效编码       │        ",
+            "        ╰──────────────────────────────────╯        ",
             "",
           },
           week_header = {
             enable = true,
+            append = { "  让每一天都充满创造力  " },
           },
           shortcut = {
-            { desc = "󰊳  更新", group = "Label", action = "Lazy update", key = "u" },
-            { desc = "  文件", group = "Label", action = "Telescope find_files", key = "f" },
-            { desc = "󰙅  退出", group = "Label", action = "quit", key = "q" },
+            { 
+              desc = "🔄  更新插件", 
+              group = { "@property", "Label" }, 
+              action = "Lazy update", 
+              key = "u",
+              icon = "",
+            },
+            { 
+              desc = "📁  查找文件", 
+              group = { "@property", "Label" }, 
+              action = "Telescope find_files", 
+              key = "f",
+              icon = "",
+            },
+            { 
+              desc = "🔍  搜索文本", 
+              group = { "@property", "Label" }, 
+              action = "Telescope live_grep", 
+              key = "g",
+              icon = "🔎",
+            },
+            { 
+              desc = "📝  新建文件", 
+              group = { "@property", "Label" }, 
+              action = "enew", 
+              key = "n",
+              icon = "",
+            },
+            { 
+              desc = "📊  项目管理", 
+              group = { "@property", "Label" }, 
+              action = "Telescope projects", 
+              key = "p",
+              icon = "📁",
+            },
+            { 
+              desc = "❌  退出", 
+              group = { "@property", "Label" }, 
+              action = "quit", 
+              key = "q",
+              icon = "✗",
+            },
           },
           packages = {
             enable = true,
+            limit = 3,
           },
           project = {
             enable = true,
-            limit = 8,
-            icon = "",
-            label = "最近项目:",
-            action = function(path) vim.cmd.cd(path) end,
+            limit = 5,
+            icon = "📁",
+            label = "🎯  最近项目:",
+            action = function(path) 
+              vim.cmd.cd(path) 
+              require("telescope.builtin").find_files()
+            end,
+            icon_hl = "DashboardProjectIcon",
+            label_hl = "DashboardProjectTitle",
           },
           mru = {
-            limit = 10,
-            icon = "",
-            label = "最近文件:",
+            limit = 7,
+            icon = "📝",
+            label = "📋  最近文件:",
+            cwd_only = false,
+            icon_hl = "DashboardMruIcon",
+            label_hl = "DashboardMruTitle",
           },
+          footer = get_footer(),
         },
       })
+      
+      -- 自定义颜色
+      vim.cmd("highlight DashboardHeader guifg=#7BCCB5")
+      vim.cmd("highlight DashboardFooter guifg=#8FA2FF")
+      vim.cmd("highlight DashboardProjectIcon guifg=#97C1A9")
+      vim.cmd("highlight DashboardProjectTitle guifg=#6A8CAF")
+      vim.cmd("highlight DashboardMruIcon guifg=#C8A2C8")
+      vim.cmd("highlight DashboardMruTitle guifg=#6A8CAF")
+      vim.cmd("highlight DashboardShortcut guifg=#8FA2FF")
     end,
-    dependencies = { { "nvim-tree/nvim-web-devicons" } },
+    dependencies = { 
+      { "nvim-tree/nvim-web-devicons" },
+      { "nvim-telescope/telescope.nvim" }, -- 为了项目和文件查找功能
+    },
   },
 
   -- 自动补全增强
   {
     "hrsh7th/nvim-cmp",
     opts = function(_, opts)
-      local cmp = require("cmp")
+      -- 使用pcall安全加载模块
+      local ok, cmp = pcall(require, "cmp")
+      if not ok then
+        vim.notify("nvim-cmp plugin not found or has errors.", vim.log.levels.WARN)
+        return opts
+      end
       opts.mapping = cmp.mapping.preset.insert({
         ["<Tab>"] = cmp.mapping.confirm({ select = true }),
         ["<C-Space>"] = cmp.mapping.complete(),
         ["<C-e>"] = cmp.mapping.abort(),
       })
+      return opts
     end,
   },
 
@@ -235,7 +386,13 @@ return {
       { "gc", mode = "v", desc = "注释选中区域" },
     },
     config = function()
-      require("Comment").setup()
+      -- 使用pcall安全加载模块
+      local ok, comment = pcall(require, "Comment")
+      if not ok then
+        vim.notify("Comment.nvim plugin not found or has errors.", vim.log.levels.WARN)
+        return
+      end
+      comment.setup()
     end,
   },
 
@@ -390,6 +547,153 @@ return {
     end,
   },
   
+  -- 增强的通知和命令行体验
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    dependencies = {
+      "MunifTanjim/nui.nvim",
+      "rcarriga/nvim-notify",
+    },
+    config = function()
+      require("noice").setup({
+        cmdline = {
+          enabled = true,
+          view = "cmdline_popup",
+          opts = {},
+          icons = {
+            ["/"] = { icon = " ", hl_group = "DiagnosticWarn" },
+            [":"] = { icon = " ", hl_group = "DiagnosticInfo" },
+          },
+        },
+        popupmenu = {
+          enabled = true,
+          backend = "nui",
+        },
+        messages = {
+          enabled = true,
+          view = "notify",
+          view_error = "notify",
+          view_warn = "notify",
+          view_history = "messages",
+          view_search = "virtualtext",
+        },
+        notify = {
+          enabled = true,
+          view = "notify",
+        },
+        lsp = {
+          progress = {
+            enabled = true,
+            format = "lsp_progress",
+            format_done = "lsp_progress_done",
+            throttle = 1000 / 30,
+            view = "mini",
+          },
+          override = {
+            ["vim.lsp.util.convert_input_to_markdown_lines"] = true,
+            ["vim.lsp.util.stylize_markdown"] = true,
+            ["cmp.entry.get_documentation"] = true,
+          },
+        },
+        presets = {
+          bottom_search = true,
+          command_palette = true,
+          long_message_to_split = true,
+          inc_rename = false,
+          lsp_doc_border = true,
+        },
+      })
+      
+      -- 配置通知插件
+      require("notify").setup({
+        stages = "fade_in_slide_out",
+        timeout = 3000,
+        max_width = 80,
+        background_colour = "#000000",
+      })
+      
+      -- 设置为默认通知器
+      vim.notify = require("notify")
+    end,
+  },
+  
   -- 终端增强插件
   { "skywind3000/vim-terminal-help", lazy = true },
+  
+  -- 增强的代码高亮和语法支持
+  {
+    "nvim-treesitter/nvim-treesitter",
+    dependencies = {
+      "nvim-treesitter/nvim-treesitter-textobjects",
+      "nvim-treesitter/nvim-treesitter-context",
+    },
+    config = function()
+      -- Use pcall to safely load the plugin and handle errors gracefully
+      local ok, treesitter_configs = pcall(require, "nvim-treesitter.configs")
+      if not ok then
+        vim.notify("nvim-treesitter plugin not found. Please run :Lazy install to install missing plugins.", vim.log.levels.WARN)
+        return
+      end
+      
+      treesitter_configs.setup({
+        ensure_installed = {
+          "c", "cpp", "lua", "vim", "vimdoc", "query",
+          "javascript", "typescript", "tsx", "jsx",
+          "html", "css", "json", "jsonc",
+          "python", "rust", "go", "bash",
+          "markdown", "markdown_inline"
+        },
+        highlight = {
+          enable = true,
+          additional_vim_regex_highlighting = false,
+        },
+        indent = {
+          enable = true,
+          disable = { "python" },
+        },
+        incremental_selection = {
+          enable = true,
+          keymaps = {
+            init_selection = "gnn",
+            node_incremental = "grn",
+            scope_incremental = "grc",
+            node_decremental = "grm",
+          },
+        },
+        textobjects = {
+          select = {
+            enable = true,
+            lookahead = true,
+            keymaps = {
+              ["af"] = "@function.outer",
+              ["if"] = "@function.inner",
+              ["ac"] = "@class.outer",
+              ["ic"] = "@class.inner",
+            },
+          },
+          move = {
+            enable = true,
+            set_jumps = true,
+            goto_next_start = {
+              ["]m"] = "@function.outer",
+              ["]]" ] = "@class.outer",
+            },
+            goto_next_end = {
+              ["]M"] = "@function.outer",
+              ["]}"] = "@class.outer",
+            },
+            goto_previous_start = {
+              ["[m"] = "@function.outer",
+              ["[["] = "@class.outer",
+            },
+            goto_previous_end = {
+              ["[M"] = "@function.outer",
+              ["[{" ] = "@class.outer",
+            },
+          },
+        },
+      })
+    end,
+  },
 }
