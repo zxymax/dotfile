@@ -592,6 +592,34 @@
     end
   },
   
+  -- Git 代码注释插件（类似GitLens）
+  {  
+    "APZelos/blamer.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      -- 使用pcall安全加载模块
+      local ok, blamer = pcall(require, "blamer")
+      if not ok then
+        vim.notify("blamer.nvim plugin not found or has errors.", vim.log.levels.WARN)
+        return
+      end
+      
+      -- 配置blamer
+      vim.g.blamer_enabled = 1
+      vim.g.blamer_delay = 300  -- 鼠标悬停延迟
+      vim.g.blamer_relative_time = 1  -- 显示相对时间
+      vim.g.blamer_date_format = '%Y-%m-%d'
+      vim.g.blamer_template = '<author> • <committer-time> • <summary>'
+      
+      -- 集成到which-key
+      if pcall(require, "which-key") then
+        require("which-key").register({
+          ["<leader>gb"] = { "<cmd>BlamerToggle<cr>", "切换GitLens注释显示" },
+        })
+      end
+    end,
+  },
+
   -- Git 冲突解决插件
   {
     "akinsho/git-conflict.nvim",

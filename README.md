@@ -424,6 +424,11 @@ git pull
 - 支持代码块操作：暂存、重置、预览等
 - 快捷键：`<leader>h` 系列命令
 
+### blamer.nvim (类似GitLens功能)
+- 在代码行旁边显示Git提交信息（作者、时间、提交信息）
+- 支持鼠标悬停显示详细信息
+- 快捷键：`<leader>gb` 切换GitLens注释显示
+
 ### vim-fugitive
 - 全面的 Git 命令集成
 - 可通过 `:Git` 命令访问所有 Git 功能
