@@ -18,14 +18,30 @@ vim.opt.rtp:prepend(lazypath)
 require("lazy").setup({
   spec = {
     -- 配置LazyVim
-    -- 使用替代方式处理mason.nvim重命名问题
     { "LazyVim/LazyVim", 
       import = "lazyvim.plugins",
     },
-    -- 添加mason.nvim的替代配置
-    { "mason-org/mason.nvim", 
+    -- 完全覆盖原始的mason.nvim插件
+    { 
+      "williamboman/mason.nvim",
+      enabled = false, -- 禁用原始插件
+    },
+    -- 添加新的mason包
+    { 
+      "mason-org/mason.nvim", 
       branch = "main",
       lazy = false,
+      -- 替代原始的mason.nvim
+      name = "mason.nvim",
+      config = function()
+        require("mason").setup({
+          ui = {
+            check_outdated_packages_on_open = false, -- 关闭自动检查更新
+          },
+          -- 禁用自动安装以避免冲突
+          ensure_installed = {},
+        })
+      end,
     },
     -- 首先添加nvim-treesitter作为独立插件
     {

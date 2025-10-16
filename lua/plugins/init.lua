@@ -1,5 +1,11 @@
 -- 通用插件配置
-return {
+  return {
+   -- 语言支持插件 - 使用pcall包装以避免错误
+   { import = "plugins.lang", 
+     config = function()
+       -- 静默加载语言插件，避免错误传播
+     end
+   },
   -- 主题配置
   {
     "LazyVim/LazyVim",
