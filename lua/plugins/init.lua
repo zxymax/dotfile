@@ -635,8 +635,8 @@
             t = { "<cmd>GitConflictChooseTheirs<cr>", "选择他们的更改" },
             b = { "<cmd>GitConflictChooseBoth<cr>", "保留双方更改" },
             ["0"] = { "<cmd>GitConflictChooseNone<cr>", "不保留任何更改" },
-            N = { "<cmd>GitConflictNextConflict<cr>", "下一个冲突" },
-            P = { "<cmd>GitConflictPrevConflict<cr>", "上一个冲突" },
+            ["N"] = { "<cmd>GitConflictNextConflict<cr>", "下一个冲突" },
+            ["P"] = { "<cmd>GitConflictPrevConflict<cr>", "上一个冲突" },
             c = { "<cmd>GitConflictListQf<cr>", "列出所有冲突" },
           }
         },

@@ -109,6 +109,11 @@ require("lazy").setup({
     -- 自动处理mason.nvim重命名
     rename = { enabled = true },
   },
+  -- 禁用luarocks支持以避免hererocks相关错误
+  rocks = {
+    enabled = false,
+    hererocks = false,
+  },
   performance = {
     rtp = {
       -- 禁用一些不需要的rtp插件以提高性能

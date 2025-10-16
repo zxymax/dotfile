@@ -62,8 +62,8 @@ return {
           type = "server",
           port = "${port}",
           executable = {
-            -- 使用 mason 安装的 codelldb
-            command = "codelldb",
+            -- 使用 mason 安装的 codelldb，通过 vim.fn.expand 正确处理路径
+            command = vim.fn.expand("$HOME/AppData/Local/nvim-data/mason/packages/codelldb/extension/adapter/codelldb"),
             args = {
               "--port",
               "${port}",
