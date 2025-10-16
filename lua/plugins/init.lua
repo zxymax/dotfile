@@ -10,7 +10,7 @@
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "tokyonight",
+      colorscheme = "gruvbox",
       header = {
         "",
         "  zzzzz    xxxxxx    yyyyy    mmmmmm    aaaaaa  ",
@@ -22,6 +22,41 @@
         "",
       },
     },
+  },
+  
+  -- Gruvbox主题插件
+  {
+    "ellisonleao/gruvbox.nvim",
+    lazy = false,
+    priority = 1000,
+    config = function()
+      local ok, gruvbox = pcall(require, "gruvbox")
+      if ok then
+        gruvbox.setup({
+          terminal_colors = true,
+          undercurl = true,
+          underline = true,
+          bold = true,
+          italic = {
+            strings = true,
+            comments = true,
+            operators = false,
+            folds = true,
+          },
+          strikethrough = true,
+          invert_selection = false,
+          invert_signs = false,
+          invert_tabline = false,
+          invert_intend_guides = false,
+          inverse = true,
+          contrast = "hard",
+          palette_overrides = {},
+          overrides = {},
+          dim_inactive = false,
+          transparent_mode = false,
+        })
+      end
+    end
   },
 
   -- 文件浏览器 - 图标支持
@@ -187,7 +222,7 @@
 
       require("lualine").setup({
         options = {
-          theme = "tokyonight",
+          theme = "gruvbox",
           component_separators = { left = '', right = '' },
           section_separators = { left = '', right = '' },
           globalstatus = true,

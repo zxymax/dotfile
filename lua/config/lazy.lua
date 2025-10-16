@@ -105,7 +105,7 @@ require("lazy").setup({
   },
   -- 处理插件重命名
   install = {
-    colorscheme = { "tokyonight", "habamax" },
+    colorscheme = { "gruvbox", "tokyonight", "habamax" },
     -- 自动处理mason.nvim重命名
     rename = { enabled = true },
   },
