@@ -4,16 +4,22 @@
 
 ## 特性
 
-- **现代化界面**：使用 TokyoNight 主题，搭配 Nerd Font 图标，提供优雅的视觉体验
+- **现代化界面**：使用 Gruvbox 主题，搭配 Nerd Font 图标，提供优雅的视觉体验
 - **增强的状态栏**：功能丰富的 lualine.nvim 配置，显示模式、分支、文件路径、LSP状态和诊断信息
 - **终端集成**：使用 Windows Terminal 模拟 tmux 功能，提供标签页管理和窗格分割
 - **智能通知系统**：通过 noice.nvim 和 nvim-notify 提供优雅的通知和命令行体验
 - **高级语法高亮**：通过增强的 nvim-treesitter 配置，支持多种编程语言和文本对象操作
 - **自定义欢迎界面**：功能丰富的 dashboard，提供快速访问最近文件、项目和常用操作
 - **平滑滚动体验**：使用 neoscroll.nvim 提供流畅的滚动效果
-- **C++ 开发支持**：集成 clangd、CMake 工具和 codelldb 调试器
+- **C++ 开发支持**：集成 clangd、CMake 工具和 codelldb 调试器（已修复路径配置）
 - **Rust 开发支持**：集成 rust-analyzer、rust-tools 和 Crates.io 依赖管理
 - **强大的调试系统**：基于 nvim-dap、dap-ui 和虚拟文本的现代化调试体验
+- **Git 集成**：集成 gitsigns.nvim、vim-fugitive 和 git-conflict.nvim，提供完整的 Git 工作流支持
+- **模糊查找**：集成 Telescope.nvim 实现快速文件和内容搜索
+- **自动补全**：增强的 nvim-cmp 配置提供智能代码补全
+- **代码注释**：使用 Comment.nvim 实现快速代码注释
+- **多光标编辑**：支持 vim-visual-multi 进行高效的多位置编辑
+- **终端集成**：使用 toggleterm.nvim 在编辑器内运行终端
 
 ## 快捷键说明
 
@@ -193,16 +199,15 @@
 | 关闭窗格 | `Ctrl+b x` | `Ctrl + Shift + W` |
 
 详细配置请查看项目中的 `WINDOWS_TERMINAL_CONFIG.md` 文件。
-- **欢迎界面**：集成 dashboard-nvim，提供项目和最近文件快速访问
-- **平滑滚动**：使用 neoscroll.nvim 提供流畅的页面滚动体验
-- **增强的终端**：改进的 toggleterm.nvim 配置，支持更好的窗口导航和视觉效果
-- **智能代码编辑**：基于 nvim-treesitter 的语法高亮和代码解析
-- **文件浏览**：使用 nvim-tree.lua 提供直观的文件管理
-- **模糊查找**：集成 Telescope.nvim 实现快速文件和内容搜索
-- **自动补全**：增强的 nvim-cmp 配置提供智能代码补全
-- **代码注释**：使用 Comment.nvim 实现快速代码注释
-- **多光标编辑**：支持 vim-visual-multi 进行高效的多位置编辑
-- **终端集成**：使用 toggleterm.nvim 在编辑器内运行终端
+
+## 近期更新
+
+### 2024 年更新内容
+- 主题从 TokyoNight 切换到 Gruvbox，提供更好的视觉体验
+- 添加 Git 插件集成，包括 gitsigns.nvim、vim-fugitive 和 git-conflict.nvim
+- 修复 codelldb 调试器路径配置问题
+- 禁用不必要的 luarocks 支持以避免配置错误
+- 优化 which-key 配置，提供更好的快捷键提示
 
 ## 安装要求
 
@@ -325,15 +330,40 @@ return {
 
 ### 修改主题
 
-在 `lua/plugins/init.lua` 中修改主题配置：
+当前使用的是 Gruvbox 主题，可在 `lua/plugins/init.lua` 中修改主题配置：
 
 ```lua
 return {
-  { "folke/tokyonight.nvim", priority = 1000, opts = { style = "moon" } },
+  { 
+    "ellisonleao/gruvbox.nvim", 
+    lazy = false, 
+    priority = 1000, 
+    opts = {
+      terminal_colors = true,
+      undercurl = true,
+      underline = true,
+      bold = true,
+      italic = { 
+        strings = true,
+        comments = true,
+        operators = false,
+        folds = true,
+      },
+      strikethrough = true,
+      invert_selection = false,
+      invert_signs = false,
+      invert_tabline = false,
+      invert_intend_guides = false,
+      inverse = true,
+      contrast = "soft",
+      palette_overrides = {},
+      overrides = {},
+      dim_inactive = false,
+      transparent_mode = false,
+    },
+  },
 }
 ```
-
-将 `style` 改为以下选项之一：`storm`, `moon`, `night`, `day`
 
 ## 故障排除
 
@@ -362,16 +392,52 @@ return {
 2. 终端已配置使用 Nerd Font
 3. 可以在 `lua/config/options.lua` 中修改字体设置
 
+### C++ 调试问题
+
+如果遇到 codelldb 调试器问题：
+1. 确保已通过 mason 安装了 codelldb
+2. 检查 `lua/plugins/lang/cpp.lua` 中的路径配置是否正确
+3. 可以使用 `:checkhealth` 命令检查配置状态
+
 ## 更新配置
 
 从 GitHub 拉取最新配置：
 
 ```bash
-# 在配置目录中执行
+# Windows
+cd %USERPROFILE%\AppData\Local\nvim
+git pull
+
+# Linux/MacOS
+cd ~/.config/nvim
 git pull
 ```
 
 然后重启 Neovim，运行 `:Lazy update` 更新所有插件。
+
+## Git 插件功能
+
+本配置集成了三个主要的 Git 插件：
+
+### gitsigns.nvim
+- 提供行内 Git 标记，显示修改、添加和删除
+- 支持代码块操作：暂存、重置、预览等
+- 快捷键：`<leader>h` 系列命令
+
+### vim-fugitive
+- 全面的 Git 命令集成
+- 可通过 `:Git` 命令访问所有 Git 功能
+
+### git-conflict.nvim
+- 可视化解决 Git 冲突
+- 快捷键：`<leader>gc` 系列命令
+
+## 调试功能
+
+### C++ 调试配置
+- 使用 codelldb 适配器进行调试
+- 支持启动可执行文件和附加到进程两种模式
+- 已修复路径配置问题，确保正常工作
 
 ## 许可证
 
