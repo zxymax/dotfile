@@ -145,11 +145,10 @@ return {
   },
 
   -- 增强调试体验
-  {
-    "folke/which-key.nvim",
+  {    "folke/which-key.nvim",
     optional = true,
     opts = {
-      defaults = {
+      spec = {
         ["<leader>d"] = {
           name = "+调试器",
         },
