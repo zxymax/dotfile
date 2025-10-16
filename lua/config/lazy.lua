@@ -21,12 +21,7 @@ require("lazy").setup({
     { "LazyVim/LazyVim", 
       import = "lazyvim.plugins",
     },
-    -- 完全覆盖原始的mason.nvim插件
-    { 
-      "williamboman/mason.nvim",
-      enabled = false, -- 禁用原始插件
-    },
-    -- 添加新的mason包
+      -- 使用新的mason包名，并彻底替换原始插件
     { 
       "mason-org/mason.nvim", 
       branch = "main",
@@ -34,14 +29,20 @@ require("lazy").setup({
       -- 替代原始的mason.nvim
       name = "mason.nvim",
       config = function()
-        require("mason").setup({
-          ui = {
-            check_outdated_packages_on_open = false, -- 关闭自动检查更新
-          },
-          -- 禁用自动安装以避免冲突
-          ensure_installed = {},
-        })
+        -- 使用pcall确保安全加载
+        local ok, mason = pcall(require, "mason")
+        if ok then
+          mason.setup({
+            ui = {
+              check_outdated_packages_on_open = false, -- 关闭自动检查更新
+            },
+            -- 禁用自动安装以避免冲突
+            ensure_installed = {},
+          })
+        end
       end,
+      -- 优先级设置为最高，确保先于其他依赖它的插件加载
+      priority = 1000,
     },
     -- 首先添加nvim-treesitter作为独立插件
     {

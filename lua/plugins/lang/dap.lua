@@ -6,7 +6,7 @@ return {
     dependencies = {
       -- 安装调试器 - 使用可选依赖，避免重命名问题并增强错误处理
       {
-        "williamboman/mason.nvim",
+        "mason-org/mason.nvim",
         optional = true,
         opts = function(_, opts)
           if type(opts.ensure_installed) == "table" then

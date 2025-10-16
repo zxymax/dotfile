@@ -45,8 +45,8 @@ return {
     optional = true,
     dependencies = {
       {
-        -- 使用可选依赖，避免mason重命名问题
-        "williamboman/mason.nvim",
+        -- 使用可选依赖，更新为新的包名
+        "mason-org/mason.nvim",
         optional = true,
         opts = function(_, opts)
           if type(opts.ensure_installed) == "table" then
