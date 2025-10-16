@@ -11,6 +11,9 @@
 - **高级语法高亮**：通过增强的 nvim-treesitter 配置，支持多种编程语言和文本对象操作
 - **自定义欢迎界面**：功能丰富的 dashboard，提供快速访问最近文件、项目和常用操作
 - **平滑滚动体验**：使用 neoscroll.nvim 提供流畅的滚动效果
+- **C++ 开发支持**：集成 clangd、CMake 工具和 codelldb 调试器
+- **Rust 开发支持**：集成 rust-analyzer、rust-tools 和 Crates.io 依赖管理
+- **强大的调试系统**：基于 nvim-dap、dap-ui 和虚拟文本的现代化调试体验
 
 ## 快捷键说明
 
@@ -96,6 +99,46 @@
 | `[d` | 上一个诊断 |
 | `]d` | 下一个诊断 |
 | `<leader>dl` | 设置诊断位置列表 |
+
+### C++ 开发功能
+
+| 快捷键 | 功能描述 |
+|-------|--------|
+| `<leader>ci` | 切换源文件/头文件 |
+| `<leader>cm` | 生成 CMake 项目 |
+| `<leader>cb` | 构建 CMake 项目 |
+| `<leader>cr` | 运行 CMake 项目 |
+| `<leader>cd` | 调试 CMake 项目 |
+| `<leader>cs` | 选择构建类型 |
+
+### Rust 开发功能
+
+| 快捷键 | 功能描述 |
+|-------|--------|
+| `<leader>ct` | 切换依赖显示 |
+| `<leader>cr` | 重新加载依赖 |
+| `<leader>cv` | 显示版本信息 |
+| `<leader>cf` | 显示特性列表 |
+| `<leader>cd` | 显示依赖树 |
+
+### 调试功能
+
+| 快捷键 | 功能描述 |
+|-------|--------|
+| `<leader>db` | 切换断点 |
+| `<leader>dB` | 设置条件断点 |
+| `<leader>dc` | 继续执行 |
+| `<leader>ds` | 单步跳过 |
+| `<leader>di` | 单步进入 |
+| `<leader>do` | 单步退出 |
+| `<leader>dr` | 打开 REPL |
+| `<leader>dl` | 运行上次配置 |
+| `<leader>dq` | 终止调试 |
+| `<leader>dd` | 断开连接 |
+| `<leader>dh` | 悬停查看变量 |
+| `<leader>dp` | 预览变量 |
+| `<leader>du` | 切换调试 UI |
+| `<leader>de` | 评估表达式 |
 
 ### 终端快捷键
 
