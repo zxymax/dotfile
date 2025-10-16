@@ -527,9 +527,6 @@
           row = 0,
           col = 1,
         },
-        yadm = {
-          enable = false,
-        },
         -- 快捷键
         on_attach = function(bufnr)
           local gs = package.loaded.gitsigns
