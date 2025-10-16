@@ -478,6 +478,190 @@
       comment.setup()
     end,
   },
+  
+  -- Git 增强插件 - 行内 git 更改标记
+  {
+    "lewis6991/gitsigns.nvim",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      local ok, gitsigns = pcall(require, "gitsigns")
+      if not ok then
+        vim.notify("gitsigns.nvim plugin not found or has errors.", vim.log.levels.WARN)
+        return
+      end
+      
+      gitsigns.setup({
+        signs = {
+          add = { text = '+' },
+          change = { text = '~' },
+          delete = { text = '_' },
+          topdelete = { text = '‾' },
+          changedelete = { text = '~' },
+          untracked = { text = '┆' },
+        },
+        signcolumn = true,
+        numhl = false,
+        linehl = false,
+        word_diff = false,
+        watch_gitdir = {
+          interval = 1000,
+          follow_files = true,
+        },
+        attach_to_untracked = true,
+        current_line_blame = false,
+        current_line_blame_opts = {
+          virt_text = true,
+          virt_text_pos = 'eol',
+          delay = 1000,
+          ignore_whitespace = false,
+        },
+        current_line_blame_formatter = '<author>, <author_time:%Y-%m-%d> - <summary>',
+        sign_priority = 6,
+        update_debounce = 100,
+        status_formatter = nil,
+        max_file_length = 40000,
+        preview_config = {
+          border = 'single',
+          style = 'minimal',
+          relative = 'cursor',
+          row = 0,
+          col = 1,
+        },
+        yadm = {
+          enable = false,
+        },
+        -- 快捷键
+        on_attach = function(bufnr)
+          local gs = package.loaded.gitsigns
+          
+          local function map(mode, l, r, opts)
+            opts = opts or {}
+            opts.buffer = bufnr
+            vim.keymap.set(mode, l, r, opts)
+          end
+          
+          -- 导航
+          map('n', ']c', function()
+            if vim.wo.diff then return ']c' end
+            vim.schedule(function() gs.next_hunk() end)
+            return '<Ignore>'
+          end, { expr = true })
+          
+          map('n', '[c', function()
+            if vim.wo.diff then return '[c' end
+            vim.schedule(function() gs.prev_hunk() end)
+            return '<Ignore>'
+          end, { expr = true })
+          
+          -- 操作
+          map('n', '<leader>hs', gs.stage_hunk)
+          map('n', '<leader>hr', gs.reset_hunk)
+          map('v', '<leader>hs', function() gs.stage_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
+          map('v', '<leader>hr', function() gs.reset_hunk {vim.fn.line('.'), vim.fn.line('v')} end)
+          map('n', '<leader>hS', gs.stage_buffer)
+          map('n', '<leader>hu', gs.undo_stage_hunk)
+          map('n', '<leader>hR', gs.reset_buffer)
+          map('n', '<leader>hp', gs.preview_hunk)
+          map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+          map('n', '<leader>tb', gs.toggle_current_line_blame)
+          map('n', '<leader>hd', gs.diffthis)
+          map('n', '<leader>hD', function() gs.diffthis('~') end)
+          map('n', '<leader>td', gs.toggle_deleted)
+          
+          -- 文本对象
+          map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+        end
+      })
+    end
+  },
+  
+  -- Git 集成插件 - 全面的 Git 功能
+  {
+    "tpope/vim-fugitive",
+    cmd = {
+      "Git", "G", "Ggrep", "Gread", "Gwrite", "Gdiffsplit",
+      "GBrowse", "GDelete", "GMove", "GRename"
+    },
+    keys = {
+      { "<leader>gg", "<cmd>Git<cr>", desc = "Git 状态" },
+      { "<leader>gc", "<cmd>Git commit<cr>", desc = "Git 提交" },
+      { "<leader>gp", "<cmd>Git push<cr>", desc = "Git 推送" },
+      { "<leader>gl", "<cmd>Git pull<cr>", desc = "Git 拉取" },
+      { "<leader>gb", "<cmd>Git branch<cr>", desc = "Git 分支" },
+      { "<leader>gd", "<cmd>Git diff<cr>", desc = "Git 差异" },
+    },
+    config = function()
+      -- 使用 fugitive 的默认配置
+    end
+  },
+  
+  -- Git 冲突解决插件
+  {
+    "akinsho/git-conflict.nvim",
+    version = "*",
+    config = true,
+    keys = {
+      { "<leader>gco", "<cmd>GitConflictChooseOurs<cr>", desc = "选择我们的更改" },
+      { "<leader>gct", "<cmd>GitConflictChooseTheirs<cr>", desc = "选择他们的更改" },
+      { "<leader>gcb", "<cmd>GitConflictChooseBoth<cr>", desc = "保留双方更改" },
+      { "<leader>gc0", "<cmd>GitConflictChooseNone<cr>", desc = "不保留任何更改" },
+      { "<leader>gcN", "<cmd>GitConflictNextConflict<cr>", desc = "下一个冲突" },
+      { "<leader>gcP", "<cmd>GitConflictPrevConflict<cr>", desc = "上一个冲突" },
+      { "<leader>gcc", "<cmd>GitConflictListQf<cr>", desc = "列出所有冲突" },
+    },
+    opts = {
+      default_mappings = false,
+      disable_diagnostics = false,
+      highlights = {
+        incoming = 'DiffAdd',
+        current = 'DiffChange',
+      },
+    }
+  },
+  
+  -- Which-key git 快捷键分组
+  {
+    "folke/which-key.nvim",
+    optional = true,
+    opts = {
+      spec = {
+        { 
+          "<leader>g", 
+          name = "+git",
+          { 
+            "c", 
+            name = "+conflict",
+            o = { "<cmd>GitConflictChooseOurs<cr>", "选择我们的更改" },
+            t = { "<cmd>GitConflictChooseTheirs<cr>", "选择他们的更改" },
+            b = { "<cmd>GitConflictChooseBoth<cr>", "保留双方更改" },
+            ["0"] = { "<cmd>GitConflictChooseNone<cr>", "不保留任何更改" },
+            N = { "<cmd>GitConflictNextConflict<cr>", "下一个冲突" },
+            P = { "<cmd>GitConflictPrevConflict<cr>", "上一个冲突" },
+            c = { "<cmd>GitConflictListQf<cr>", "列出所有冲突" },
+          }
+        },
+        { 
+          "<leader>h", 
+          name = "+hunk",
+          s = { "<cmd>Gitsigns stage_hunk<cr>", "暂存当前块" },
+          r = { "<cmd>Gitsigns reset_hunk<cr>", "重置当前块" },
+          S = { "<cmd>Gitsigns stage_buffer<cr>", "暂存当前缓冲区" },
+          u = { "<cmd>Gitsigns undo_stage_hunk<cr>", "撤销暂存当前块" },
+          R = { "<cmd>Gitsigns reset_buffer<cr>", "重置当前缓冲区" },
+          p = { "<cmd>Gitsigns preview_hunk<cr>", "预览当前块" },
+          b = { "<cmd>Gitsigns blame_line{full=true}<cr>", "显示行的完整注释" },
+          d = { "<cmd>Gitsigns diffthis<cr>", "显示差异" },
+          D = { "<cmd>Gitsigns diffthis('~')<cr>", "显示与上一次提交的差异" },
+        },
+        { 
+          "<leader>t", 
+          name = "+toggle",
+          b = { "<cmd>Gitsigns toggle_current_line_blame<cr>", "切换行注释显示" },
+          d = { "<cmd>Gitsigns toggle_deleted<cr>", "切换删除行显示" },
+        },
+      },
+    },
+  },
 
   -- 多光标编辑
   {
