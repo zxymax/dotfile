@@ -21,6 +21,7 @@ return {
   -- 文件浏览器 - 图标支持
   {
     "nvim-tree/nvim-web-devicons",
+    lazy = true, -- 延迟加载以提高启动速度
     config = function()
       local ok, web_devicons = pcall(require, "nvim-web-devicons")
       if ok then
@@ -29,16 +30,16 @@ return {
           strict = true,
           override_by_extension = {}
         })
-        vim.notify("nvim-web-devicons已加载，使用Hack Nerd Font图标", vim.log.levels.INFO)
-      else
-        vim.notify("无法加载nvim-web-devicons", vim.log.levels.WARN)
       end
     end,
   },
   {    
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
-    event = "VeryLazy", -- 添加事件触发，确保在启动时加载
+    event = { "VeryLazy" }, -- 使用table形式更清晰
+    keys = {
+      { "<leader>e", "<cmd>NvimTreeToggle<cr>", desc = "文件浏览器" },
+    },
     config = function()
       -- 添加错误处理
       local ok, nvim_tree = pcall(require, "nvim-tree")
@@ -47,39 +48,56 @@ return {
         return
       end
       
-      -- 确保全局命令存在
-      _G.NvimTreeToggle = function()
-        local api = require("nvim-tree.api")
-        api.tree.toggle()
-      end
-      
-      -- 配置选项 - 使用真正的图标
+      -- 配置选项 - 使用真正的图标，优化性能
       local config = {
+          -- 性能优化设置
+          sync_root_with_cwd = true,
+          respect_buf_cwd = true,
+          update_focused_file = {
+            enable = true,
+            update_root = true,
+          },
+          -- 视图设置
           view = {
             width = 30,
+            preserve_window_proportions = true,
           },
+          -- 文件过滤
           filters = {
             dotfiles = false,
+            git_ignored = false, -- 显示被git忽略的文件
           },
+          -- Git集成
           git = {
             enable = true,
             ignore = false,
+            timeout = 400, -- 减少git操作超时时间
+          },
+          -- 文件系统相关
+          filesystem_watchers = {
+            enable = true,
+            debounce_delay = 50,
           },
           -- 使用nvim-web-devicons的图标
           renderer = {
             icons = {
-              -- 启用所有图标显示
-              show = {
-                file = true,
-                folder = true,
-                folder_arrow = true,
-                git = true,
-              },
-              -- 使用默认图标配置
+              -- 简化图标配置
+              git_placement = "after",
+              padding = "  ",
+              symlink_arrow = " → ",
               glyphs = {
+                default = "",
+                symlink = "",
+                bookmark = "",
                 folder = {
                   arrow_closed = "▶",
                   arrow_open = "▼",
+                  default = "",
+                  open = "",
+                  empty = "",
+                  empty_open = "",
+                  symlink = "",
+                  symlink_open = "",
                 },
               },
               -- 启用webdev颜色
@@ -87,37 +105,51 @@ return {
             },
             -- 特殊文件标记
             special_files = {
-              "Cargo.toml", "Makefile", "README.md", "readme.md"
-            }
+              "Cargo.toml", "Makefile", "README.md", "readme.md", "package.json", "go.mod", "go.sum"
+            },
+            -- 性能优化：减少渲染
+            indent_markers = {
+              enable = false, -- 禁用缩进标记以提高性能
+            },
           },
           -- 添加自定义快捷键映射
-          on_attach = function(bufnr)
-          local api = require("nvim-tree.api")
+            on_attach = function(bufnr)
+              -- 使用局部变量避免重复require
+              local api = require("nvim-tree.api")
+              
+              -- 定义默认映射
+              local function keymap(lhs, rhs, desc)
+                vim.keymap.set('n', lhs, rhs, {
+                  desc = "nvim-tree: " .. desc,
+                  buffer = bufnr,
+                  noremap = true,
+                  silent = true,
+                  nowait = true,
+                })
+              end
+              
+              -- 基本导航映射
+              keymap('<CR>', api.node.open.edit, '打开文件')
+              keymap('o', api.node.open.edit, '打开文件')
+              keymap('h', api.node.navigate.parent_close, '关闭目录')
+              keymap('l', api.node.open.edit, '打开文件/目录')
+              keymap('q', api.tree.close, '关闭')
+              keymap('<Esc>', api.tree.close, '关闭')
+              -- 额外实用快捷键
+              keymap('r', api.fs.rename, '重命名')
+              keymap('d', api.fs.remove, '删除')
+              keymap('a', api.fs.create, '创建文件')
+              keymap('c', api.fs.copy.node, '复制')
+              keymap('x', api.fs.cut, '剪切')
+              keymap('p', api.fs.paste, '粘贴')
+              keymap('gf', api.node.navigate.git.prev, '上一个git变更')
+              keymap('gn', api.node.navigate.git.next, '下一个git变更')
+              keymap('.', api.node.run.cmd, '运行命令')
+            end
+          }
           
-          -- 定义默认映射
-          local function opts(desc)
-            return {
-              desc = "nvim-tree: " .. desc,
-              buffer = bufnr,
-              noremap = true,
-              silent = true,
-              nowait = true,
-            }
-          end
-          
-          -- 基本导航映射
-          vim.keymap.set('n', '<CR>', api.node.open.edit, opts('Open'))
-          vim.keymap.set('n', 'o', api.node.open.edit, opts('Open'))
-          vim.keymap.set('n', 'h', api.node.navigate.parent_close, opts('Close Directory'))
-          vim.keymap.set('n', 'l', api.node.open.edit, opts('Open'))
-          vim.keymap.set('n', 'q', api.tree.close, opts('Close'))
-        end
-      }
-      
-      nvim_tree.setup(config)
-      
-      vim.notify("nvim-tree.lua加载成功，使用Hack Nerd Font图标", vim.log.levels.INFO)
-    end,
+          nvim_tree.setup(config)
+        end,
   },
 
   -- 增强的状态栏配置

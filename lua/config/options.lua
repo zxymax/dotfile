@@ -53,11 +53,15 @@ vim.opt.undodir = vim.fn.stdpath("data") .. "/undodir" -- 撤销目录
 vim.opt.undofile = true        -- 启用撤销文件
 vim.opt.autoread = true        -- 自动读取外部修改的文件
 
--- 性能设置
-vim.opt.updatetime = 250       -- 更新时间
-vim.opt.timeoutlen = 300       -- 按键超时时间
-vim.opt.lazyredraw = false     -- 不延迟重绘
+-- 性能优化设置
+vim.opt.updatetime = 300       -- 更新时间，增加到300ms以减少CPU使用率
+vim.opt.timeoutlen = 500       -- 按键超时时间，增加到500ms更合理
+vim.opt.lazyredraw = true      -- 延迟重绘，在执行宏时提升性能
 vim.opt.ttyfast = true         -- 终端速度快
+vim.opt.synmaxcol = 200        -- 限制语法高亮的列数，提高大文件性能
+vim.opt.scrolljump = 5         -- 滚动时跳转的行数
+vim.opt.hidden = true          -- 允许隐藏修改过的缓冲区
+vim.opt.shortmess:append({ c = true }) -- 减少命令行消息
 
 -- 完成设置
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- 自动完成选项

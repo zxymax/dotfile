@@ -20,34 +20,43 @@ require("lazy").setup({
     -- 配置LazyVim
     { "LazyVim/LazyVim", 
       import = "lazyvim.plugins",
-      opts = {
-        header = {
-          "",
-          "██████╗  █████╗ ███╗   ███╗███████╗██████╗ ",
-          "██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗",
-          "██████╔╝███████║██╔████╔██║█████╗  ██║  ██║",
-          "██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ██║  ██║",
-          "██████╔╝██║  ██║██║ ╚═╝ ██║███████╗██████╔╝",
-          "╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═════╝ ",
-          "                    zxymax                    ",
-          "",
-        },
-      },
     },
     -- 首先添加nvim-treesitter作为独立插件
     {
       "nvim-treesitter/nvim-treesitter",
       priority = 1000, -- 确保优先加载
       build = ":TSUpdate",
+      dependencies = {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+      },
       config = function()
-        local ok, treesitter_configs = pcall(require, "nvim-treesitter.configs")
-        if ok then
+        -- 添加更强健的错误处理
+        local ok, treesitter = pcall(require, "nvim-treesitter")
+        if not ok then
+          vim.notify("无法加载nvim-treesitter: " .. tostring(treesitter), vim.log.levels.ERROR)
+          return
+        end
+        
+        local ok_configs, treesitter_configs = pcall(require, "nvim-treesitter.configs")
+        if ok_configs then
           treesitter_configs.setup({
             ensure_installed = {"c", "cpp", "lua", "vim", "vimdoc", "query"},
-            highlight = { enable = true },
+            highlight = { 
+              enable = true,
+              -- 禁用大型文件的语法高亮以提高性能
+              disable = function(lang, buf)
+                local max_filesize = 100 * 1024 -- 100 KB
+                local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+                if ok and stats and stats.size > max_filesize then
+                  return true
+                end
+              end,
+            },
             indent = { enable = true },
+            incremental_selection = { enable = true },
+            textobjects = { enable = true },
           })
-          print("✅ nvim-treesitter配置成功!")
+          vim.notify("✅ nvim-treesitter配置成功!", vim.log.levels.INFO)
         else
           print("❌ 无法加载nvim-treesitter配置")
         end
