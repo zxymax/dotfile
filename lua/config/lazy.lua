@@ -17,6 +17,23 @@ vim.opt.rtp:prepend(lazypath)
 -- 简化的插件配置
 require("lazy").setup({
   spec = {
+    -- 配置LazyVim
+    { "LazyVim/LazyVim", 
+      import = "lazyvim.plugins",
+      opts = {
+        header = {
+          "",
+          "██████╗  █████╗ ███╗   ███╗███████╗██████╗ ",
+          "██╔══██╗██╔══██╗████╗ ████║██╔════╝██╔══██╗",
+          "██████╔╝███████║██╔████╔██║█████╗  ██║  ██║",
+          "██╔══██╗██╔══██║██║╚██╔╝██║██╔══╝  ██║  ██║",
+          "██████╔╝██║  ██║██║ ╚═╝ ██║███████╗██████╔╝",
+          "╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝╚═════╝ ",
+          "                    zxymax                    ",
+          "",
+        },
+      },
+    },
     -- 首先添加nvim-treesitter作为独立插件
     {
       "nvim-treesitter/nvim-treesitter",
@@ -36,8 +53,7 @@ require("lazy").setup({
         end
       end,
     },
-    -- LazyVim核心插件
-    { "LazyVim/LazyVim", import = "lazyvim.plugins" },
+    -- 已在上方配置
     -- 自定义插件
     { import = "plugins" },
   },
