@@ -595,12 +595,16 @@
   -- Git 代码注释插件（类似GitLens）
   {  
     "APZelos/blamer.nvim",
+    lazy = true, -- 懒加载，减少启动时间
     event = { "BufReadPre", "BufNewFile" },
     config = function()
-      -- 使用pcall安全加载模块
-      local ok, blamer = pcall(require, "blamer")
-      if not ok then
-        vim.notify("blamer.nvim plugin not found or has errors.", vim.log.levels.WARN)
+      -- 检查插件是否存在，不存在则跳过配置
+      local has_blamer, _ = pcall(require, "blamer")
+      if not has_blamer then
+        -- 仅记录日志，不显示警告弹窗
+        vim.schedule(function()
+          vim.notify_once("blamer.nvim插件未安装，已跳过配置", vim.log.levels.DEBUG)
+        end)
         return
       end
       
