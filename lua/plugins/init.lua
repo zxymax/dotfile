@@ -648,10 +648,19 @@
     }
   },
   
-  -- Which-key git 快捷键分组
+  -- 主要的Which-key配置
   {
     "folke/which-key.nvim",
-    optional = true,
+    event = "VeryLazy",
+    config = function()
+      local ok, which_key = pcall(require, "which-key")
+      if not ok then
+        vim.notify("which-key.nvim插件未加载", vim.log.levels.WARN)
+        return
+      end
+      
+      which_key.setup({})
+    end,
     opts = {
       spec = {
         { 

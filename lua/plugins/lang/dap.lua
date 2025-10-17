@@ -144,15 +144,5 @@ return {
     },
   },
 
-  -- 增强调试体验
-  {    "folke/which-key.nvim",
-    optional = true,
-    opts = {
-      spec = {
-        ["<leader>d"] = {
-          name = "+调试器",
-        },
-      },
-    },
-  },
+  -- 增强调试体验：通过主配置中的which-key.nvim统一管理快捷键
 }
