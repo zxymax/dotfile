@@ -108,10 +108,6 @@ require("lazy").setup({
     notify = false, -- 关闭更新通知
     frequency = 3600 * 24, -- 每24小时检查一次更新
   },
-    colorscheme = { "gruvbox", "tokyonight", "habamax" },
-    -- 自动处理mason.nvim重命名
-    rename = { enabled = true },
-  },
   -- 禁用luarocks支持以避免hererocks相关错误
   rocks = {
     enabled = false,
