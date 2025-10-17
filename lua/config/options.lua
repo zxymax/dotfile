@@ -64,7 +64,7 @@ vim.opt.shortmess:append({ c = true, F = true, I = true, W = true }) -- 减少�
 
 -- 更高级的性能优化
 vim.opt.redrawtime = 1000       -- 增加重绘时间限制
-vim.opt.lazyredraw = true      -- 延迟重绘，提高大量文本处理速度
+-- vim.opt.lazyredraw = true      -- 延迟重绘，只应临时启用，会影响Noice等插件
 vim.opt.eventignore = { 'TextChanged', 'CursorMovedI', 'CursorMoved' } -- 忽略一些频繁事件
 vim.opt.shada = "!,'1000,<50,s10,h" -- 优化持久化状态
 vim.opt.loadplugins = true     -- 启用插件加载
