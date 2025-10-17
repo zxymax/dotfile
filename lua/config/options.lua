@@ -54,13 +54,42 @@ vim.opt.undofile = true        -- 启用撤销文件
 vim.opt.autoread = true        -- 自动读取外部修改的文件
 
 -- 性能优化设置
-vim.opt.updatetime = 300       -- 更新时间，增加到300ms以减少CPU使用率
-vim.opt.timeoutlen = 500       -- 按键超时时间，增加到500ms更合理
+vim.opt.updatetime = 100       -- 更新时间，降低到100ms提高响应速度
+vim.opt.timeoutlen = 300       -- 按键超时时间，降低到300ms提高响应速度
 vim.opt.ttyfast = true         -- 终端速度快
-vim.opt.synmaxcol = 200        -- 限制语法高亮的列数，提高大文件性能
+vim.opt.synmaxcol = 120        -- 限制语法高亮的列数，进一步提高大文件性能
 vim.opt.scrolljump = 5         -- 滚动时跳转的行数
 vim.opt.hidden = true          -- 允许隐藏修改过的缓冲区
-vim.opt.shortmess:append({ c = true }) -- 减少命令行消息
+vim.opt.shortmess:append({ c = true, F = true, I = true, W = true }) -- 减少命令行消息
+
+-- 更高级的性能优化
+vim.opt.redrawtime = 1000       -- 增加重绘时间限制
+vim.opt.lazyredraw = true      -- 延迟重绘，提高大量文本处理速度
+vim.opt.eventignore = { 'TextChanged', 'CursorMovedI', 'CursorMoved' } -- 忽略一些频繁事件
+vim.opt.shada = "!,'1000,<50,s10,h" -- 优化持久化状态
+vim.opt.loadplugins = true     -- 启用插件加载
+vim.opt.undolevels = 1000      -- 增加撤销历史
+vim.opt.undoreload = 10000     -- 增加撤销缓冲区
+vim.opt.swapfile = false       -- 禁用交换文件
+vim.opt.backup = false         -- 禁用备份文件
+vim.opt.writebackup = false    -- 禁用写备份
+
+-- 自动命令优化：避免不必要的高亮刷新
+vim.api.nvim_create_autocmd({
+  "BufRead",
+  "BufWinEnter",
+  "BufNewFile",
+}, {
+  desc = "仅在需要时启用语法高亮",
+  callback = function()
+    local line_count = vim.api.nvim_buf_line_count(0)
+    if line_count < 1000 then
+      vim.cmd [[syntax on]]
+    else
+      vim.cmd [[syntax off]]
+    end
+  end,
+})
 
 -- 完成设置
 vim.opt.completeopt = { "menu", "menuone", "noselect" } -- 自动完成选项

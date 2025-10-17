@@ -90,21 +90,24 @@ require("lazy").setup({
     { import = "plugins" },
   },
   defaults = {
-    -- By default, only LazyVim plugins will be lazy-loaded. Your custom plugins will load during startup.
-    -- If you know what you're doing, you can set this to `true` to have all your custom plugins lazy-loaded by default.
-    lazy = false,
-    -- It's recommended to leave version=false for now, since a lot the plugin that support versioning,
-    -- have outdated releases, which may break your Neovim install.
-    version = false, -- always use the latest git commit
-    -- version = "*", -- try installing the latest stable version for plugins that support semver
+    -- 设置默认懒加载，提高启动速度
+    lazy = true,
+    -- 不自动加载插件，除非明确指定
+    auto = false,
+    -- 使用最新版本，避免过时版本导致的问题
+    version = false,
   },
-  install = { colorscheme = { "tokyonight", "habamax" } },
+  -- 安装和检查器设置
+  install = { 
+    colorscheme = { "gruvbox", "tokyonight", "habamax" },
+    -- 自动处理插件重命名
+    rename = { enabled = true },
+  },
   checker = {
     enabled = true, -- 定期检查插件更新
     notify = false, -- 关闭更新通知
+    frequency = 3600 * 24, -- 每24小时检查一次更新
   },
-  -- 处理插件重命名
-  install = {
     colorscheme = { "gruvbox", "tokyonight", "habamax" },
     -- 自动处理mason.nvim重命名
     rename = { enabled = true },
@@ -116,17 +119,35 @@ require("lazy").setup({
   },
   performance = {
     rtp = {
-      -- 禁用一些不需要的rtp插件以提高性能
+      -- 禁用更多不需要的rtp插件以提高性能
       disabled_plugins = {
         "gzip",
-        -- "matchit",
-        -- "matchparen",
+        "matchit",
+        "matchparen",
         -- "netrwPlugin", -- 保留netrw以避免与其他文件浏览器冲突
         "tarPlugin",
         "tohtml",
         "tutor",
         "zipPlugin",
+        "spellfile_plugin",
+        "rplugin",
+        "man",
+        "shada_plugin",
+        "health",
       },
     },
+    -- 启用自动加载优化
+    cache = {
+      enabled = true,
+    },
+    -- 启用自动清理
+    reset_packpath = true,
+    -- 减少不必要的事件处理
+    event = {
+      -- 禁用一些不常用的事件
+      "BufNewFile",
+    },
+    -- 限制lazy.nvim自身的日志级别
+    log_level = vim.log.levels.ERROR,
   },
 })

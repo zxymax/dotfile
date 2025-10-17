@@ -687,6 +687,44 @@
       },
     },
   },
+  
+  -- 内存使用优化插件
+  {
+    "chrisbra/Recover.vim",
+    lazy = true,
+    cmd = "Recover",
+  },
+  
+  -- 性能优化插件
+  {
+    "lewis6991/impatient.nvim",
+    lazy = false,
+    priority = 10000,
+    config = function()
+      -- 使用pcall安全加载
+      local ok = pcall(require, "impatient")
+      if not ok then
+        vim.notify("impatient.nvim加载失败，但不影响正常使用", vim.log.levels.WARN)
+      end
+    end,
+  },
+
+  -- 更快的文件类型检测
+  {
+    "nathom/filetype.nvim",
+    lazy = false,
+    config = function()
+      require("filetype").setup({
+        overrides = {
+          extensions = {
+            -- 添加自定义文件类型
+            h = "cpp",
+            hpp = "cpp",
+          },
+        },
+      })
+    end,
+  },
 
   -- 多光标编辑
   {
@@ -696,6 +734,8 @@
 
   -- 模糊查找
   {    "nvim-telescope/telescope.nvim",
+    lazy = true, -- 启用懒加载
+    cmd = "Telescope", -- 仅在命令调用时加载
     config = function()
       -- 首先添加全局修复：提供ft_to_lang函数
       local function setup_ft_to_lang_fix()
@@ -749,16 +789,66 @@
       -- 尝试加载telescope
       local ok, telescope = pcall(require, "telescope")
       if ok then
+        -- 尝试加载fzf扩展
+        local ok_fzf = pcall(require, "telescope")
+        if ok_fzf then
+          pcall(function() telescope.load_extension("fzf") end)
+        end
+        
         telescope.setup({
           defaults = {
+            -- 性能优化设置
+            cache_picker = {
+              num_pickers = 10,
+            },
+            vimgrep_arguments = {
+              'rg',
+              '--color=never',
+              '--no-heading',
+              '--with-filename',
+              '--line-number',
+              '--column',
+              '--smart-case',
+              '--hidden',
+              '--glob=!.git/',
+            },
+            path_display = { "truncate" },
+            sorting_strategy = "ascending",
+            layout_strategy = "horizontal",
+            layout_config = {
+              horizontal = {
+                prompt_position = "top",
+                preview_width = 0.55,
+                results_width = 0.8,
+              },
+              vertical = {
+                mirror = false,
+              },
+              width = 0.87,
+              height = 0.80,
+              preview_cutoff = 120,
+            },
             mappings = {
               i = {
                 ["<C-u>"] = false,
                 ["<C-d>"] = false,
+                ["<C-n>"] = require("telescope.actions").cycle_history_next,
+                ["<C-p>"] = require("telescope.actions").cycle_history_prev,
               },
             },
             preview = {
-              treesitter = false, -- 禁用treesitter预览以避免错误
+              treesitter = false, -- 禁用treesitter预览以提高性能
+              timeout = 200, -- 限制预览加载时间
+              filesize_limit = 1, -- 限制预览文件大小为1MB
+            },
+            -- 减少不必要的延迟
+            dynamic_preview_title = false,
+            file_ignore_patterns = {
+              "node_modules/",
+              ".git/",
+              "__pycache__/",
+              "build/",
+              "dist/",
             },
           },
         })
@@ -774,8 +864,16 @@
       {"<leader>fb", function() require("telescope.builtin").buffers() end, desc = "Buffers"},
       {"<leader>fh", function() require("telescope.builtin").help_tags() end, desc = "Help Tags"},
     },
-    lazy = false, -- 不懒加载，确保所有命令可用
-    dependencies = {"nvim-lua/plenary.nvim"}, -- 只保留必要的依赖
+    dependencies = {
+      "nvim-lua/plenary.nvim", -- 只保留必要的依赖
+      {
+        "nvim-telescope/telescope-fzf-native.nvim",
+        build = "cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build",
+        config = function()
+          pcall(function() require("telescope").load_extension("fzf") end)
+        end,
+      },
+    },
   },
   
   -- 终端集成 - 改进的终端配置
@@ -916,6 +1014,11 @@
   -- 增强的代码高亮和语法支持
   {
     "nvim-treesitter/nvim-treesitter",
+    event = { "BufReadPost", "BufNewFile" }, -- 延迟到文件读取后再加载
+    build = function()
+      local ts_update = require('nvim-treesitter.install').update({ with_sync = true })
+      ts_update()
+    end,
     dependencies = {
       "nvim-treesitter/nvim-treesitter-textobjects",
       "nvim-treesitter/nvim-treesitter-context",
@@ -936,12 +1039,35 @@
           "python", "rust", "go", "bash",
           "markdown", "markdown_inline"
         },
+        -- 性能优化选项
+        sync_install = false,
+        auto_install = true,
+        ignore_install = {},
+        modules = {},
         highlight = {
           enable = true,
+          -- 对大文件禁用高亮以提高性能
+          disable = function(_, buf)
+            local max_filesize = 100 * 1024 -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+              return true
+            end
+          end,
           additional_vim_regex_highlighting = false,
+          -- 禁用增量高亮以提高性能
+          use_languagetree = false,
         },
         indent = {
           enable = true,
+          -- 对大文件禁用缩进
+          disable = function(_, buf)
+            local max_filesize = 100 * 1024 -- 100 KB
+            local ok, stats = pcall(vim.loop.fs_stat, vim.api.nvim_buf_get_name(buf))
+            if ok and stats and stats.size > max_filesize then
+              return true
+            end
+          end,
           disable = { "python" },
         },
         incremental_selection = {
