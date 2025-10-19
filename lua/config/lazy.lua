@@ -1,18 +1,60 @@
 -- 确保lazy.nvim正确安装
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
-  print("正在安装lazy.nvim插件管理器...")
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", lazyrepo, lazypath })
-  if vim.v.shell_error ~= 0 then
-    print("安装lazy.nvim失败:")
-    print(out)
-    print("请手动克隆仓库: git clone --filter=blob:none --branch=stable https://github.com/folke/lazy.nvim.git " .. lazypath)
-  else
-    print("✅ lazy.nvim安装成功!")
+
+-- 增强的lazy.nvim引导检查函数
+local function ensure_lazy_nvim()
+  if not (vim.uv or vim.loop).fs_stat(lazypath) then
+    print("🔄 正在安装lazy.nvim插件管理器...")
+    local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+    
+    -- 尝试执行git clone命令
+    local out = vim.fn.system({ 
+      "git", 
+      "clone", 
+      "--filter=blob:none", 
+      "--branch=stable", 
+      lazyrepo, 
+      lazypath 
+    })
+    
+    if vim.v.shell_error ~= 0 then
+      -- 安装失败，提供详细的错误信息和备选方案
+      print("❌ 安装lazy.nvim失败!")
+      print("错误详情:")
+      print(out)
+      print("")
+      print("📋 请尝试以下手动安装步骤:")
+      print("1. 打开终端")
+      print("2. 执行命令: git clone --filter=blob:none --branch=stable " .. lazyrepo .. " " .. lazypath)
+      print("3. 检查网络连接和GitHub访问权限")
+      print("4. 确保git已正确安装")
+      print("")
+      print("🔄 备选方案: 如果你在受限环境中，可以:")
+      print("- 从其他设备复制lazy.nvim文件夹到 " .. lazypath)
+      print("- 检查防火墙或代理设置")
+      return false
+    else
+      print("✅ lazy.nvim安装成功!")
+      print("🔍 正在准备插件加载...")
+      return true
+    end
   end
+  return true
 end
-vim.opt.rtp:prepend(lazypath)
+
+-- 执行lazy.nvim安装检查
+local lazy_installed = ensure_lazy_nvim()
+if lazy_installed then
+  vim.opt.rtp:prepend(lazypath)
+else
+  print("⚠️  无法加载插件，将使用基本配置启动")
+  -- 设置基本的编辑器选项，确保即使在没有插件的情况下也能使用
+  vim.opt.number = true
+  vim.opt.relativenumber = true
+  vim.opt.tabstop = 2
+  vim.opt.shiftwidth = 2
+  vim.opt.expandtab = true
+end
 
 -- 简化的插件配置
 require("lazy").setup({

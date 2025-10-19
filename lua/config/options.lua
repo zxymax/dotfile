@@ -98,6 +98,10 @@ vim.opt.completeopt = { "menu", "menuone", "noselect" } -- 自动完成选项
 vim.opt.splitbelow = true      -- 新窗口在下方
 vim.opt.splitright = true      -- 新窗口在右侧
 
+-- 可配置的常量
+-- 这些常量可以被插件配置引用，便于用户自定义
+vim.g.PREVIEW_FILESIZE_LIMIT = 1 -- Telescope预览文件大小限制（MB）
+
 -- 编码设置
 vim.opt.encoding = "utf-8"     -- 编码
 vim.opt.fileencoding = "utf-8" -- 文件编码
@@ -163,6 +167,34 @@ if not vim.notify then
   end
 end
 
+-- 启用LSP诊断功能
+vim.diagnostic.config({
+  virtual_text = true,  -- 在代码旁边显示诊断信息
+  signs = true,         -- 显示诊断符号
+  underline = true,     -- 下划线标记错误
+  update_in_insert = true, -- 在插入模式下也更新诊断
+  severity_sort = true, -- 按严重程度排序
+  float = {
+    focusable = false,
+    style = "minimal",
+    border = "rounded",
+    source = "always",
+    header = "",
+    prefix = "",
+  },
+})
+
+-- 确保LSP客户端正确配置诊断处理
+vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics,
+  {
+    virtual_text = true,
+    signs = true,
+    underline = true,
+    update_in_insert = true,
+  }
+)
+
 -- 定义全局函数，确保它们可以在整个配置中访问
 _G.toggle_line_numbers = function()
   if vim.opt.relativenumber:get() then
@@ -195,6 +227,81 @@ _G.toggle_spell_check = function()
     vim.notify("拼写检查已开启", vim.log.levels.INFO)
   end
 end
+
+-- LSP 诊断配置 - 增强版
+vim.diagnostic.config({
+  virtual_text = {
+    enabled = true,
+    severity = { min = vim.diagnostic.severity.WARN },
+    spacing = 4,
+    prefix = '● ',
+  },  -- 启用代码旁诊断信息
+  signs = {
+    active = {
+      { name = 'DiagnosticSignError', text = '✗' },
+      { name = 'DiagnosticSignWarn', text = '!' },
+      { name = 'DiagnosticSignHint', text = '?' },
+      { name = 'DiagnosticSignInfo', text = 'ℹ' },
+    },
+  },         -- 启用诊断符号
+  underline = {
+    severity = { min = vim.diagnostic.severity.INFO },
+  },     -- 启用错误下划线标记
+  update_in_insert = true, -- 在插入模式下更新诊断
+  severity_sort = true,  -- 按严重程度排序
+  float = {
+    border = 'rounded',
+    source = 'always',
+    header = '',
+    prefix = '',
+    format = function(diagnostic)
+      return string.format('%s (%s)', diagnostic.message, diagnostic.source)
+    end,
+  },
+})
+
+-- 设置诊断符号和颜色
+vim.cmd([[
+  sign define DiagnosticSignError text=✗ texthl=DiagnosticSignError linehl= numhl=
+  sign define DiagnosticSignWarn text=! texthl=DiagnosticSignWarn linehl= numhl=
+  sign define DiagnosticSignHint text=? texthl=DiagnosticSignHint linehl= numhl=
+  sign define DiagnosticSignInfo text=ℹ texthl=DiagnosticSignInfo linehl= numhl=
+]])
+
+-- 配置 LSP 诊断处理器
+vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(
+  vim.lsp.diagnostic.on_publish_diagnostics, {
+    virtual_text = true,
+    signs = true,
+    underline = true,
+    update_in_insert = true,
+    severity_sort = true,
+  }
+)
+
+-- 为C++文件添加专门的自动命令来确保诊断启用
+vim.api.nvim_create_autocmd({'FileType'}, {
+  pattern = {'cpp', 'c'},  -- C++和C文件
+  callback = function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    -- 启用诊断
+    vim.diagnostic.enable(bufnr)
+    -- 确保LSP客户端已附加
+    vim.api.nvim_create_autocmd({'BufEnter', 'BufWritePost'}, {
+      buffer = bufnr,
+      callback = function()
+        -- 延迟检查以确保LSP启动
+        vim.defer_fn(function()
+          local clients = vim.lsp.get_active_clients({ buffer = bufnr })
+          if #clients > 0 then
+            -- 手动触发代码操作以刷新诊断
+            vim.lsp.codelens.refresh()
+          end
+        end, 100)
+      end,
+    })
+  end,
+})
 
 _G.format_buffer = function()
   local filetype = vim.bo.filetype

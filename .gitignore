@@ -1,6 +1,7 @@
 tt.*
 # Logs
 *.log
+nvim_error.log  # 错误日志文件
 
 # Dependencies
 nvim-data/

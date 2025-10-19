@@ -1,0 +1,60 @@
+-- Stylua 配置文件
+-- 用于Neovim配置的格式化设置
+
+column_width = 120
+line_endings = "Unix"
+indent_type = "Spaces"
+indent_width = 2
+tab_width = 2
+quote_style = "Double"
+call_parentheses = "Always"
+collapse_simple_statement = "Never"
+
+-- 忽略的文件和目录
+ignore = [
+  ".git",
+  "__pycache__",
+  "build",
+  "dist",
+  "node_modules",
+  ".DS_Store",
+  "*.swp",
+  "*.swo",
+  "*.log",
+  "*.tmp",
+  "*.temp",
+  "*.bak",
+  ".env",
+  ".venv",
+  "lazy-lock.json",  -- 插件锁定文件
+  "**/packer_compiled.lua",  -- Packer编译文件
+  "**/plugin/packer_compiled.lua",  -- 插件目录中的编译文件
+]
+
+-- 保存前格式化
+format_on_save = true
+
+-- 允许短表格式
+allow_hidden_first_line_comments = true
+
+-- 条件表达式格式化选项
+align_array_table = false
+align_call_args = false
+align_function_params = false
+align_if_branch = false
+align_type_declarations = false
+
+-- 尾部逗号设置
+trailing_table_separator = "Smart"
+
+-- 表构造器格式化
+table_constructor_style = "Auto"
+
+-- 函数定义和调用格式化
+function_call_style = "Normal"
+function_indent_style = "Auto"
+
+-- 条件控制结构的大括号样式
+if_control_brace = "SameLine"
+for_control_brace = "SameLine"
+while_control_brace = "SameLine"

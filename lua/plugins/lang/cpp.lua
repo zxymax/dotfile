@@ -20,7 +20,18 @@ return {
           settings = {
             -- 提高 clangd 的性能和功能
             clangd = {
-              extraArgs = { "--background-index", "-std=c++20" },
+              extraArgs = { 
+                "--background-index", 
+                "-std=c++20",
+                "--clang-tidy",  -- 启用clang-tidy进行更严格的检查
+                "--header-insertion=never",
+                "--completion-style=detailed",
+                "--all-scopes-completion",
+                "--cross-file-rename",
+                "--suggest-missing-includes",
+                "--function-arg-placeholders",
+                "--fallback-style=Google"
+              },
               checkUpdates = false,
               semanticHighlighting = true,
               completion = {
@@ -34,7 +45,60 @@ return {
         clangd = function(_, opts)
           -- 增强 clangd 体验
           local lspconfig = require("lspconfig")
-          lspconfig.clangd.setup(opts)
+          
+          -- 使用LazyVim提供的默认能力配置，避免依赖未安装的cmp_nvim_lsp模块
+          local clangd_opts = {
+            cmd = {
+              'clangd',
+              '--background-index',
+              '-std=c++20',
+              '--clang-tidy',
+              '--header-insertion=never',
+              '--completion-style=detailed',
+              '--all-scopes-completion',
+              '--cross-file-rename',
+              '--suggest-missing-includes',
+              '--function-arg-placeholders',
+              '--fallback-style=Google',
+              '--query-driver=**',  -- 确保找到所有编译器
+            },
+            -- 使用LazyVim提供的默认能力配置
+            on_attach = function(client, bufnr)
+              -- 明确启用诊断功能
+              client.server_capabilities.documentHighlightProvider = true
+              client.server_capabilities.documentFormattingProvider = true
+              client.server_capabilities.documentRangeFormattingProvider = true
+              
+              -- 设置快捷键
+              vim.keymap.set('n', '<leader>di', vim.diagnostic.open_float, { buffer = bufnr })
+              vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { buffer = bufnr })
+              vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { buffer = bufnr })
+              
+              -- 确保诊断立即更新
+              vim.api.nvim_create_autocmd('BufWritePost', {
+                buffer = bufnr,
+                callback = function()
+                  vim.lsp.codelens.refresh()
+                end,
+              })
+            end,
+            handlers = {
+              ['textDocument/publishDiagnostics'] = vim.lsp.with(
+                vim.lsp.diagnostic.on_publish_diagnostics,
+                {
+                  virtual_text = true,
+                  signs = true,
+                  underline = true,
+                  update_in_insert = true,
+                  severity_sort = true,
+                }
+              ),
+            },
+            root_dir = lspconfig.util.root_pattern('.git', 'compile_commands.json', 'CMakeLists.txt'),
+          }
+          
+          -- 应用配置
+          lspconfig.clangd.setup(clangd_opts)
         end,
       },
     },
